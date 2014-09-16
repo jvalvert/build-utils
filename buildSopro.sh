@@ -29,7 +29,7 @@ DMG_VOLNAME=SocietyPro
 # SocietyPro Distribution Files
 SOPRO_DIST=~/centraldev/societypro/repo/Cambrian-src/sopro-dist-root
 #repo BRANCH
-REPO=mac-test-dev
+REPO=master
 # Output Directory
 OUTPUT=~/Desktop/sopro-dmg
 # Remember the original working directory
@@ -64,8 +64,11 @@ cp -R Applications $OUTPUT/Applications
 # Move the apps file to the app
 #
 echo Updating repository...
+# enter to the repo where the project is located
 cd $PROJECT_PATH
+# checkout and checkin the correct branch
 git checkout $REPO
+#ensure that all the changes in the branch master are pulled
 git pull
 echo Copying Apps existing in $SOPRO_DIST repository to $APP/CONTENT/MACOS/APPS...
 cp -r $SOPRO_DIST $OUTPUT/$APP/Contents/MacOS/$APPS_DIR
