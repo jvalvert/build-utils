@@ -43,7 +43,15 @@ WD=$(pwd)
 mkdir -p $OUTPUT
 rm -r $OUTPUT
 mkdir $OUTPUT
-
+#
+# Update the repository
+echo Updating repository...
+# Enter to the repo where the project is located
+cd $PROJECT_PATH
+# checkout and checkin the correct branch
+git checkout $REPO
+#ensure that all the changes in the branch master are pulled
+git pull
 
 echo Compiling Cambrian...
 # Build Cambrian and put it on output directory to be added to the dmg
@@ -62,14 +70,6 @@ cp -R Applications $OUTPUT/Applications
 
 #
 # Move the apps file to the app
-#
-echo Updating repository...
-# enter to the repo where the project is located
-cd $PROJECT_PATH
-# checkout and checkin the correct branch
-git checkout $REPO
-#ensure that all the changes in the branch master are pulled
-git pull
 echo Copying Apps existing in $SOPRO_DIST repository to $APP/CONTENT/MACOS/APPS...
 cp -r $SOPRO_DIST $OUTPUT/$APP/Contents/MacOS/$APPS_DIR
 #Add icon to resources from icon located in
