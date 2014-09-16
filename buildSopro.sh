@@ -20,15 +20,16 @@ PROJECT_PATH=~/centraldev/societypro/repo/Cambrian-src
 PROJECT=Cambrian.pro
 #Mac App Name
 APP=SocietyPro.app
+APP_ICON=SocietyPro.icns
 #Apps Directory Name
-APPS_DIR=SocietyPro-Apps
+APPS_DIR=Apps
 #DMG name
 DMG=SocietyPro.dmg
 DMG_VOLNAME=SocietyPro
 # SocietyPro Distribution Files
 SOPRO_DIST=~/centraldev/societypro/repo/Cambrian-src/sopro-dist-root
 #repo BRANCH
-REPO=test-dist
+REPO=mac-test-dev
 # Output Directory
 OUTPUT=~/Desktop/sopro-dmg
 # Remember the original working directory
@@ -42,16 +43,7 @@ WD=$(pwd)
 mkdir -p $OUTPUT
 rm -r $OUTPUT
 mkdir $OUTPUT
-#
-# Move the apps file to output
-#
-echo Updating repository...
-cd $PROJECT_PATH
-git checkout $REPO
-git pull
-CD $WD
-echo Copying Apps existing in $SOPRO_DIST repository...
-cp -r $SOPRO_DIST $OUTPUT/$APPS_DIR
+
 
 echo Compiling Cambrian...
 # Build Cambrian and put it on output directory to be added to the dmg
@@ -59,6 +51,8 @@ cd $PROJECT_PATH
 $QMAKE/qmake $PROJECT_PATH/$PROJECT -r -spec macx-clang CONFIG+=x86_64 CONFIG+=silent CONFIG+=warn_off
 # Make the app
 make -f Makefile
+# Clean all the objective code
+make clean
 
 # move the app to the output directory
 mv $APP $OUTPUT/$APP
@@ -66,9 +60,22 @@ mv $APP $OUTPUT/$APP
 ln -s /Applications Applications
 cp -R Applications $OUTPUT/Applications
 
+#
+# Move the apps file to the app
+#
+echo Updating repository...
+cd $PROJECT_PATH
+git checkout $REPO
+git pull
+echo Copying Apps existing in $SOPRO_DIST repository to $APP/CONTENT/MACOS/APPS...
+cp -r $SOPRO_DIST $OUTPUT/$APP/Contents/MacOS/$APPS_DIR
+#Add icon to resources from icon located in
+cp $WD/$APP_ICON $OUTPUT/$APP/Contents/Resources/SocietyPro.icns
+#Overwrite the default Info.plist from the Info.plist located in script files
+cp $WD/Info.plist $OUTPUT/$APP/Contents/Info.plist
+CD $WD
+CD $WD
 
-# Clean all the objective code
-make clean
 
 #Create the dmg Disk
 echo Creating Installer...
@@ -76,7 +83,6 @@ hdiutil create -volname $DMG_VOLNAME -srcfolder $OUTPUT -ov -format UDZO $OUTPUT
 
 #Cleanup
 cd $OUTPUT
-rm -r $APPS_DIR
 rm -r $APP
 rm Applications
 #return to the current directory
