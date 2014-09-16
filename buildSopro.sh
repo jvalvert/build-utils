@@ -9,25 +9,33 @@
 echo Cambrian Installer 1.0 by Central Services. 2014
 echo
 echo Initializing...
-# Setting up variables
+################################## PARAMETERS###############################################
 #
-# NOTE:Modify this paths to point to the correct project path in your mac OS X box
+# NOTE:Modify this PARAMETERS to point to the correct project path REPO and customize app output
 #
 # Set the full QMAKE location path
-
 QMAKE=~/Qt/5.3/clang_64/bin/
 # Project Path: (the local repo directory)
-PROJECT=~/centraldev/societypro/repo/Cambrian-src
+PROJECT_PATH=~/centraldev/societypro/repo/Cambrian-src
+PROJECT=Cambrian.pro
+#Mac App Name
+APP=SocietyPro.app
+#Apps Directory Name
+APPS_DIR=SocietyPro-Apps
+#DMG name
+DMG=SocietyPro.dmg
+DMG_VOLNAME=SocietyPro
 # SocietyPro Distribution Files
 SOPRO_DIST=~/centraldev/societypro/repo/Cambrian-src/sopro-dist-root
-#repo
+#repo BRANCH
 REPO=test-dist
 # Output Directory
 OUTPUT=~/Desktop/sopro-dmg
 # Remember the original working directory
 WD=$(pwd)
 #
-# Copy the apps to the build directory before build
+######################################################################################################
+## Copy the apps to the build directory before build
 #
 # Create the output directory if it does not exist and ensure is empty:
 #
@@ -38,35 +46,39 @@ mkdir $OUTPUT
 # Move the apps file to output
 #
 echo Updating repository...
-cd $PROJECT
+cd $PROJECT_PATH
 git checkout $REPO
 git pull
 CD $WD
 echo Copying Apps existing in $SOPRO_DIST repository...
-cp -r $SOPRO_DIST $OUTPUT/sopro-dist-root
+cp -r $SOPRO_DIST $OUTPUT/$APPS_DIR
 
 echo Compiling Cambrian...
 # Build Cambrian and put it on output directory to be added to the dmg
-cd $PROJECT
-$QMAKE/qmake $PROJECT/Cambrian.pro -r -spec macx-clang CONFIG+=x86_64 CONFIG+=silent CONFIG+=warn_off
+cd $PROJECT_PATH
+$QMAKE/qmake $PROJECT_PATH/$PROJECT -r -spec macx-clang CONFIG+=x86_64 CONFIG+=silent CONFIG+=warn_off
 F# Make the app
 make -f Makefile
-echo Creating Installer...
+
 # move the app to the output directory
-mv SocietyPro.app $OUTPUT/SocietyPro.app
+mv $APP $OUTPUT/$APP
 # create symbolic link to /Applications
 ln -s /Applications Applications
 cp -R Applications $OUTPUT/Applications
-rm Applications
+
 
 # Clean all the objective code
 make clean
-hdiutil create -volname SocietyPro -srcfolder $OUTPUT -ov -format UDZO $OUTPUT/SocietyPro.dmg
+
+#Create the dmg Disk
+echo Creating Installer...
+hdiutil create -volname $DMG_VOLNAME -srcfolder $OUTPUT -ov -format UDZO $OUTPUT/$DMG
 
 #Cleanup
 cd $OUTPUT
-rm -r sopro-dist-root
-rm -r SocietyPro.app
+rm -r $APPS_DIR
+rm -r $APP
+rm Applications
 #return to the current directory
 cd $WD
 echo Finished.  Installer available at $OUTPUT directory
