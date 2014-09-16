@@ -57,7 +57,7 @@ echo Compiling Cambrian...
 # Build Cambrian and put it on output directory to be added to the dmg
 cd $PROJECT_PATH
 $QMAKE/qmake $PROJECT_PATH/$PROJECT -r -spec macx-clang CONFIG+=x86_64 CONFIG+=silent CONFIG+=warn_off
-F# Make the app
+# Make the app
 make -f Makefile
 
 # move the app to the output directory
