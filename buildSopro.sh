@@ -5,6 +5,10 @@
 #  Requeriments:
 # - Have QT environment installed on a Mac OS X
 # - Set the path to C++ compiler $QTINSTALLDIR/<version>/clang_64/bin
+# - to upload the file check that the Dropbox App is running with the following credentials:
+#   user: jorge@societypro.org
+#   password: C@mbrian
+
 #
 echo Cambrian Installer 1.0 by Central Services. 2014
 echo
@@ -32,6 +36,8 @@ SOPRO_DIST=~/centraldev/societypro/repo/Cambrian-src/sopro-dist-root
 REPO=master
 # Output Directory
 OUTPUT=~/Desktop/sopro-dmg
+# Location of the local dropbox folder that sincronizes files to the cloud
+DROPBOX=~/Dropbox
 # Remember the original working directory
 WD=$(pwd)
 #
@@ -49,10 +55,10 @@ echo Updating repository...
 # Enter to the repo where the project is located
 cd $PROJECT_PATH
 # checkout and checkin the correct branch
-git checkout $REPO
+git checkout  $REPO
 #ensure that all the changes in the branch master are pulled
 git pull
-
+git submodule update --init --recursive
 echo Compiling Cambrian...
 # Build Cambrian and put it on output directory to be added to the dmg
 cd $PROJECT_PATH
@@ -61,6 +67,11 @@ $QMAKE/qmake $PROJECT_PATH/$PROJECT -r -spec macx-clang CONFIG+=x86_64 CONFIG+=s
 make -f Makefile
 # Clean all the objective code
 make clean
+# Deploy QT libraries to the release (avoid absolute path to dinamic libraries with @excecutable_path)
+# Its ok if you see the next message:  ERROR: no file at "/opt/local/lib/mysql55/lib/libmysqlclient.18.dylib"
+# This is because the process tries to add an Mysqlclient library.  If you want you can install mysqlclient but is not necesary.
+echo Adding Qt Libraries to the app.  If you see an Mysql error just ignore it.
+macdeployqt $APP
 
 # move the app to the output directory
 mv $APP $OUTPUT/$APP
@@ -88,9 +99,14 @@ hdiutil create -volname $DMG_VOLNAME -srcfolder $OUTPUT -ov -format UDZO $OUTPUT
 cd $OUTPUT
 rm -r $APP
 rm Applications
+# Move the installer to the cloud. Check if your dropbox folder is working
+cp $OUTPUT/$DMG $DROPBOX/$DMG
 #return to the current directory
 cd $WD
-echo Finished.  Installer available at $OUTPUT directory
+echo Finished.  Installer available at $OUTPUT directory and upload to DROPBOX . Check if your dropbox app is running
+
+
+
 
 
 

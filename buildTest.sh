@@ -5,6 +5,9 @@
 #  Requeriments:
 # - Have QT environment installed on a Mac OS X
 # - Set the path to C++ compiler $QTINSTALLDIR/<version>/clang_64/bin
+# - to upload the file check that the Dropbox App is running with the following credentials:
+#   user: jorge@societypro.org
+#   password: C@mbrian
 #
 echo Cambrian Installer 1.0 by Central Services. 2014
 echo
@@ -19,11 +22,12 @@ QMAKE=~/Qt/5.3/clang_64/bin/
 PROJECT_PATH=~/Desktop/MenuBarTest
 PROJECT=Cambrian.pro
 #Mac App Name
-APP=MenuBarTest.app
+APP=SocietyPro.app
 #Apps Directory Name
 APPS_DIR=Apps
 #DMG name
 DMG=SocietyPro.dmg
+DMG_TMP=Temp.dmg
 DMG_VOLNAME=SocietyPro
 # SocietyPro Distribution Files
 SOPRO_DIST=~/Desktop/MenuBarTest/sopro-dist-root
@@ -31,6 +35,7 @@ SOPRO_DIST=~/Desktop/MenuBarTest/sopro-dist-root
 REPO=mac-test-dev
 # Output Directory
 OUTPUT=~/Desktop/sopro-dmg
+DROPBOX=~/Dropbox
 # Remember the original working directory
 WD=$(pwd)
 #
@@ -54,7 +59,7 @@ make -f Makefile
 make clean
 
 # move the app to the output directory
-mv $APP $OUTPUT/$APP
+mv MenubarTest.app $OUTPUT/$APP
 # create symbolic link to /Applications
 ln -s /Applications Applications
 cp -R Applications $OUTPUT/Applications
@@ -75,19 +80,31 @@ cp $WD/SocietyPro.icns $OUTPUT/$APP/Contents/Resources/SocietyPro.icns
 #Overwrite the default Info.plist
 cp $WD/Info.plist $OUTPUT/$APP/Contents/Info.plist
 CD $WD
-
-
 #Create the dmg Disk
 echo Creating Installer...
 #hdiutil create -volname $DMG_VOLNAME -srcfolder $OUTPUT -ov -format UDZO $OUTPUT/$DMG
+
+#Customizations of the installer
+# Modify the volume by mounting in readwrite
+
+echo creating Temporal DMG to customize the installer...
+cd $OUTPUT
+hdiutil create -srcfolder $OUTPUT -volname $DMG_VOLNAME -fs HFS+ \
+-fsargs "-c c=64,a=16,e=16" -format UDRW  $DMG_TMP
+#Mount the device in readwrite mode
+DEVICE=$(hdiutil attach -readwrite -noverify $DMG_TMP)
+
 
 #Cleanup
 cd $OUTPUT
 #rm -r $APP
 rm Applications
+#cp $OUTPUT/$DMG $DROPBOX/$DMG
 #return to the current directory
 cd $WD
-echo Finished.  Installer available at $OUTPUT directory
+echo Finished.  Installer available at $OUTPUT directory and upload to DROPBOX . Check if your dropbox app is running
+
+
 
 
 
