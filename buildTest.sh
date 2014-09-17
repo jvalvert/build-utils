@@ -23,12 +23,14 @@ PROJECT_PATH=~/Desktop/MenuBarTest
 PROJECT=Cambrian.pro
 #Mac App Name
 APP=SocietyPro.app
+
 #Apps Directory Name
 APPS_DIR=Apps
 #DMG name
-DMG=SocietyPro.dmg
+DMG=SocietyPro-0.0.20.dmg
 DMG_TMP=Temp.dmg
 DMG_VOLNAME=SocietyPro
+DMG_BACKGROUND_IMG="SocietyPro_logo.png"
 # SocietyPro Distribution Files
 SOPRO_DIST=~/Desktop/MenuBarTest/sopro-dist-root
 #repo BRANCH
@@ -86,19 +88,82 @@ echo Creating Installer...
 
 #Customizations of the installer
 # Modify the volume by mounting in readwrite
-
+# Unmount the dmg if its loaded previously
+hdiutil detach /Volumes/"${DMG_VOLNAME}"
 echo creating Temporal DMG to customize the installer...
 cd $OUTPUT
 hdiutil create -srcfolder $OUTPUT -volname $DMG_VOLNAME -fs HFS+ \
 -fsargs "-c c=64,a=16,e=16" -format UDRW  $DMG_TMP
+
+sleep 2
+
 #Mount the device in readwrite mode
 DEVICE=$(hdiutil attach -readwrite -noverify $DMG_TMP)
 
 
+# Copy image background
+cp $WD/$DMG_BACKGROUND_IMG $OUTPUT/$DMG_BACKGROUND_IMG
+
+#Prepare the background image, so if the background image changes, it will be adapted
+# Check the background image DPI and convert it if it isn't 72x72
+
+_BACKGROUND_IMAGE_DPI_H=`sips -g dpiHeight ${OUTPUT}/${DMG_BACKGROUND_IMG} | grep -Eo '[0-9]+\.[0-9]+'`
+_BACKGROUND_IMAGE_DPI_W=`sips -g dpiWidth ${OUTPUT}/${DMG_BACKGROUND_IMG} | grep -Eo '[0-9]+\.[0-9]+'`
+
+if [ $(echo " $_BACKGROUND_IMAGE_DPI_H != 72.0 " | bc) -eq 1 -o $(echo " $_BACKGROUND_IMAGE_DPI_W != 72.0 " | bc) -eq 1 ]; then
+echo "WARNING: The background image's DPI is not 72.  This will result in distorted backgrounds on Mac OS X 10.7+."
+echo "         I will convert it to 72 DPI..."
+cd $OUTPUT
+_DMG_BACKGROUND_TMP="${DMG_BACKGROUND_IMG%.*}"_dpifix."${DMG_BACKGROUND_IMG##*.}"
+
+sips -s dpiWidth 72 -s dpiHeight 72 ${DMG_BACKGROUND_IMG} --out ${_DMG_BACKGROUND_TMP}
+#image modified by 72x72
+DMG_BACKGROUND_IMG="${_DMG_BACKGROUND_TMP}"
+fi
+
+# add a background image to dmg
+mkdir /Volumes/"${DMG_VOLNAME}"/.background
+
+cp "${DMG_BACKGROUND_IMG}" /Volumes/"${DMG_VOLNAME}"/.background/
+# tell the Finder to resize the window, set the background,
+#  change the icon size, place the icons in the right position, etc.
+echo '
+tell application "Finder"
+tell disk "'${DMG_VOLNAME}'"
+open
+set current view of container window to icon view
+set toolbar visible of container window to false
+set statusbar visible of container window to false
+set the bounds of container window to {200,100, 800, 580}
+set viewOptions to the icon view options of container window
+set arrangement of viewOptions to not arranged
+set icon size of viewOptions to 72
+set background picture of viewOptions to file ".background:'${DMG_BACKGROUND_IMG}'"
+set position of item "'${APP}'" of container window to {475, 1}
+set position of item "Applications" of container window to {475,350}
+close
+open
+update without registering applications
+delay 2
+end tell
+end tell
+' | osascript
+
+sync
+
+# unmount it
+hdiutil detach /Volumes/"${DMG_VOLNAME}"
+
+#final image a compressed disk image
+echo "Creating compressed image and put it at output"
+hdiutil convert "${DMG_TMP}" -format UDZO -imagekey zlib-level=9 -o $OUTPUT/$DMG
+
 #Cleanup
 cd $OUTPUT
-#rm -r $APP
-rm Applications
+rm -r $APP
+rm $DMG_BACKGROUND_IMG
+rm $DMG_TMP
+rm -r Applications
 #cp $OUTPUT/$DMG $DROPBOX/$DMG
 #return to the current directory
 cd $WD
