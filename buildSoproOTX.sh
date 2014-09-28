@@ -8,8 +8,9 @@
 # - to upload the file check that the Dropbox App is running with the following credentials:
 #   user: jorge@societypro.org
 #   password: C@mbrian
+
 #
-echo Cambrian Installer 1.0 by Central Services. 2014
+echo SocietyPro Installer 1.0 by Central Services. 2014
 echo
 echo Initializing...
 ################################## PARAMETERS###############################################
@@ -19,24 +20,27 @@ echo Initializing...
 # Set the full QMAKE location path
 QMAKE=~/Qt/5.3/clang_64/bin/
 # Project Path: (the local repo directory)
-PROJECT_PATH=~/Desktop/MenuBarTest
-PROJECT=Cambrian.pro
+PROJECT_PATH=~/centraldev/societypro/repo/SocietyPro-OTX/SOPRO-OTX/SOPRO-OTX
+#the path where the project put the app file
+OUTPUTAPP_PATH=~/OTX/SOPRO-OTX_OUTPUT/SOPRO-OTX-MAIN
+PROJECT=SOPRO-OTX.pro
 #Mac App Name
-APP=SocietyPro.app
-
+APP=SocietyPro-OTX.app
+APP_ICON=SocietyPro.icns
 #Apps Directory Name
 APPS_DIR=Apps
-#DMG name
-DMG=SocietyPro-0.0.20.dmg
+#DMG name put the correct version here
+DMG=SocietyPro-OTX.dmg
 DMG_TMP=Temp.dmg
-DMG_VOLNAME=SocietyPro
+DMG_VOLNAME=SocietyProOTX-0.1.1.3
 DMG_BACKGROUND_IMG="SocietyPro_logo.png"
 # SocietyPro Distribution Files
-SOPRO_DIST=~/Desktop/MenuBarTest/sopro-dist-root
+#SOPRO_DIST=~/centraldev/societypro/repo/Cambrian-src/sopro-dist-root
 #repo BRANCH
-REPO=mac-test-dev
+#REPO=dev
 # Output Directory
 OUTPUT=~/Desktop/sopro-dmg
+# Location of the local dropbox folder that sincronizes files to the cloud
 DROPBOX=~/Dropbox
 # Remember the original working directory
 WD=$(pwd)
@@ -49,9 +53,17 @@ WD=$(pwd)
 mkdir -p $OUTPUT
 rm -r $OUTPUT
 mkdir $OUTPUT
-
-
-echo Compiling Cambrian...
+#
+# Update the repository (NOT NEED FOR THIS SCRIP)
+#echo Updating repository...
+# Enter to the repo where the project is located
+#cd $PROJECT_PATH
+# checkout and checkin the correct branch
+#git checkout  $REPO
+#ensure that all the changes in the branch master are pulled
+#git pull
+#git submodule update --init --recursive
+echo Compiling CambrianOTX...
 # Build Cambrian and put it on output directory to be added to the dmg
 cd $PROJECT_PATH
 $QMAKE/qmake $PROJECT_PATH/$PROJECT -r -spec macx-clang CONFIG+=x86_64 CONFIG+=silent CONFIG+=warn_off
@@ -59,37 +71,37 @@ $QMAKE/qmake $PROJECT_PATH/$PROJECT -r -spec macx-clang CONFIG+=x86_64 CONFIG+=s
 make -f Makefile
 # Clean all the objective code
 make clean
+# Deploy QT libraries to the release (avoid absolute path to dinamic libraries with @excecutable_path)
+# Its ok if you see the next message:  ERROR: no file at "/opt/local/lib/mysql55/lib/libmysqlclient.18.dylib"
+# This is because the process tries to add an Mysqlclient library.  If you want you can install mysqlclient but is not necesary.
+echo Adding Qt Libraries to the app.  If you see an Mysql error just ignore it.
+macdeployqt $APP
 
 # move the app to the output directory
-mv MenubarTest.app $OUTPUT/$APP
+mv $OUTPUTAPP_PATH/$APP $OUTPUT/$APP
 # create symbolic link to /Applications
 ln -s /Applications Applications
 cp -R Applications $OUTPUT/Applications
 
 #
 # Move the apps file to the app
-#
-#echo Updating repository...
-#cd $PROJECT_PATH
-#git checkout $REPO
-#git pull
-echo Copying Apps existing in $SOPRO_DIST repository to $APP/CONTENT/MACOS/APPS...
-
-#Copy Apps
-cp -r $SOPRO_DIST $OUTPUT/$APP/Contents/MacOS/$APPS_DIR
-#Add icon to resources
-cp $WD/SocietyPro.icns $OUTPUT/$APP/Contents/Resources/SocietyPro.icns
-#Overwrite the default Info.plist
+#echo Copying Apps existing in $SOPRO_DIST repository to $APP/CONTENT/MACOS/APPS...
+#cp -r $SOPRO_DIST $OUTPUT/$APP/Contents/MacOS/$APPS_DIR
+#Add icon to resources from icon located in
+cp $WD/$APP_ICON $OUTPUT/$APP/Contents/Resources/SocietyPro.icns
+#Overwrite the default Info.plist from the Info.plist located in script files
 cp $WD/Info.plist $OUTPUT/$APP/Contents/Info.plist
 CD $WD
+
+
+
 #Create the dmg Disk
 echo Creating Installer...
-#hdiutil create -volname $DMG_VOLNAME -srcfolder $OUTPUT -ov -format UDZO $OUTPUT/$DMG
-
-#Customizations of the installer
-# Modify the volume by mounting in readwrite
 # Unmount the dmg if its loaded previously
 hdiutil detach /Volumes/"${DMG_VOLNAME}"
+#Customizations of the installer
+# Modify the volume by mounting in readwrite
+
 echo creating Temporal DMG to customize the installer...
 cd $OUTPUT
 hdiutil create -srcfolder $OUTPUT -volname $DMG_VOLNAME -fs HFS+ \
@@ -134,7 +146,7 @@ open
 set current view of container window to icon view
 set toolbar visible of container window to false
 set statusbar visible of container window to false
-set the bounds of container window to {200,100, 800, 580}
+set the bounds of container window to {200,100, 800, 600}
 set viewOptions to the icon view options of container window
 set arrangement of viewOptions to not arranged
 set icon size of viewOptions to 72
@@ -158,16 +170,19 @@ hdiutil detach /Volumes/"${DMG_VOLNAME}"
 echo "Creating compressed image and put it at output"
 hdiutil convert "${DMG_TMP}" -format UDZO -imagekey zlib-level=9 -o $OUTPUT/$DMG
 
+
 #Cleanup
 cd $OUTPUT
 rm -r $APP
 rm $DMG_BACKGROUND_IMG
 rm $DMG_TMP
 rm -r Applications
-#cp $OUTPUT/$DMG $DROPBOX/$DMG
+# Move the installer to the cloud. Check if your dropbox folder is working
+cp $OUTPUT/$DMG $DROPBOX/$DMG
 #return to the current directory
 cd $WD
 echo Finished.  Installer available at $OUTPUT directory and upload to DROPBOX . Check if your dropbox app is running
+
 
 
 

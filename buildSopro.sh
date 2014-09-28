@@ -35,7 +35,7 @@ DMG_BACKGROUND_IMG="SocietyPro_logo.png"
 # SocietyPro Distribution Files
 SOPRO_DIST=~/centraldev/societypro/repo/Cambrian-src/sopro-dist-root
 #repo BRANCH
-REPO=dev
+REPO=dev 
 # Output Directory
 OUTPUT=~/Desktop/sopro-dmg
 # Location of the local dropbox folder that sincronizes files to the cloud
