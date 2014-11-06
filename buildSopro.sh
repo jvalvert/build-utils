@@ -20,7 +20,7 @@ echo Initializing...
 # Set the full QMAKE location path
 QMAKE=~/Qt/5.3/clang_64/bin/
 # Project Path: (the local repo directory)
-PROJECT_PATH=~/centraldev/societypro/repo/Cambrian-src
+PROJECT_PATH=~/repo/Cambrian-src
 PROJECT=Cambrian.pro
 #Mac App Name
 APP=SocietyPro.app
@@ -30,12 +30,12 @@ APPS_DIR=Apps
 #DMG name put the correct version here
 DMG=SocietyPro.dmg
 DMG_TMP=Temp.dmg
-DMG_VOLNAME=SocietyPro-0.1.1.3
+DMG_VOLNAME=SocietyPro-0.1.6.8
 DMG_BACKGROUND_IMG="SocietyPro_logo.png"
 # SocietyPro Distribution Files
-SOPRO_DIST=~/centraldev/societypro/repo/Cambrian-src/sopro-dist-root
-#repo BRANCH
-REPO=dev
+SOPRO_DIST=~repo/Cambrian-src/sopro-dist-root
+#repo Cambrian-src branch master
+BRANCH=master
 # Output Directory
 OUTPUT=~/Desktop/sopro-dmg
 # Location of the local dropbox folder that sincronizes files to the cloud
@@ -57,7 +57,7 @@ echo Updating repository...
 # Enter to the repo where the project is located
 cd $PROJECT_PATH
 # checkout and checkin the correct branch
-git checkout  $REPO
+git checkout  $BRANCH
 #ensure that all the changes in the branch master are pulled
 git pull
 git submodule update --init --recursive
