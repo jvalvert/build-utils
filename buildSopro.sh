@@ -10,7 +10,7 @@
 #   password: C@mbrian
 
 #
-echo Cambrian Installer 1.0 by Central Services. 2014
+echo Cambrian Installer for Mac 1.0 by Central Services. 2014
 echo
 echo Initializing...
 ################################## PARAMETERS###############################################
